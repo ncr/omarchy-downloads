@@ -1,0 +1,202 @@
+[
+  {
+    "family": "Adwaita Mono",
+    "version": "before",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      13,
+      24
+    ],
+    "topGap": 2,
+    "bottomGap": 6,
+    "offset": -2.0,
+    "thresholdOffsets": [
+      -2.0,
+      -2.0,
+      -2.0
+    ]
+  },
+  {
+    "family": "Adwaita Mono",
+    "version": "after",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      15,
+      26
+    ],
+    "topGap": 4,
+    "bottomGap": 4,
+    "offset": 0.0,
+    "thresholdOffsets": [
+      -0.5,
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "family": "JetBrainsMono Nerd Font",
+    "version": "before",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      14,
+      25
+    ],
+    "topGap": 3,
+    "bottomGap": 5,
+    "offset": -1.0,
+    "thresholdOffsets": [
+      -1.0,
+      -1.0,
+      -1.0
+    ]
+  },
+  {
+    "family": "JetBrainsMono Nerd Font",
+    "version": "after",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      15,
+      26
+    ],
+    "topGap": 4,
+    "bottomGap": 4,
+    "offset": 0.0,
+    "thresholdOffsets": [
+      -0.5,
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "family": "Liberation Mono",
+    "version": "before",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      13,
+      23
+    ],
+    "topGap": 2,
+    "bottomGap": 7,
+    "offset": -2.5,
+    "thresholdOffsets": [
+      -2.5,
+      -2.5,
+      -2.5
+    ]
+  },
+  {
+    "family": "Liberation Mono",
+    "version": "after",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      15,
+      25
+    ],
+    "topGap": 4,
+    "bottomGap": 5,
+    "offset": -0.5,
+    "thresholdOffsets": [
+      -0.5,
+      -0.5,
+      -0.5
+    ]
+  },
+  {
+    "family": "Nimbus Mono PS",
+    "version": "before",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      15,
+      24
+    ],
+    "topGap": 4,
+    "bottomGap": 6,
+    "offset": -1.0,
+    "thresholdOffsets": [
+      -1.5,
+      -1.0,
+      -1.0
+    ]
+  },
+  {
+    "family": "Nimbus Mono PS",
+    "version": "after",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      16,
+      25
+    ],
+    "topGap": 5,
+    "bottomGap": 5,
+    "offset": 0.0,
+    "thresholdOffsets": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "family": "iA Writer Mono S",
+    "version": "before",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      15,
+      25
+    ],
+    "topGap": 4,
+    "bottomGap": 5,
+    "offset": -0.5,
+    "thresholdOffsets": [
+      -0.5,
+      -0.5,
+      -0.5
+    ]
+  },
+  {
+    "family": "iA Writer Mono S",
+    "version": "after",
+    "pill": [
+      11,
+      30
+    ],
+    "ink": [
+      15,
+      26
+    ],
+    "topGap": 4,
+    "bottomGap": 4,
+    "offset": 0.0,
+    "thresholdOffsets": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+]
