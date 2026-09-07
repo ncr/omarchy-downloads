@@ -12,6 +12,7 @@ PanelWindow {
 
   property Item anchorItem: null
   property QtObject bar: null
+  property QtObject owner: null
   property bool open: false
   property bool dragging: false
   property real contentWidth: Style.space(520)
@@ -21,6 +22,8 @@ PanelWindow {
   signal dismissed()
 
   function close() { popup.dismissed() }
+
+  readonly property QtObject coordinatorKey: owner || popup
 
   readonly property var anchorWindow: anchorItem ? anchorItem.QsWindow.window : null
   readonly property string barPosition: bar ? bar.position : "top"
@@ -72,10 +75,10 @@ PanelWindow {
       focusPrimed = false
       prime.restart()
       body.forceActiveFocus()
-      if (bar) bar.requestPopout(popup)
+      if (bar) bar.requestPopout(coordinatorKey)
     } else {
       prime.stop()
-      if (bar && bar.activePopout === popup) bar.releasePopout(popup)
+      if (bar && bar.activePopout === coordinatorKey) bar.releasePopout(coordinatorKey)
     }
   }
   Timer { id: prime; interval: 75; onTriggered: popup.focusPrimed = true }

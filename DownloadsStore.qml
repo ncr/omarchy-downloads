@@ -132,13 +132,13 @@ Singleton {
     if (folder) root.folderUrl = folder
   }
 
-  function show() { root.showOn(null, null) }
+  function show() { root.showOn(null, null, null) }
   function hide() { root.open = false }
   function toggle() { root.open ? root.hide() : root.show() }
 
   // One popup, many bar copies. Keep the opening widget as the anchor so
   // the card follows its bar position and monitor.
-  function showOn(anchor, bar) {
+  function showOn(anchor, bar, owner) {
     // rescan rather than tick: tick redraws from the model, and the model is
     // only attached once the probe has said the folder is small enough to
     // read that way. Opening the window is exactly when that question wants
@@ -147,6 +147,7 @@ Singleton {
     if (anchor) {
       win.anchorItem = anchor
       win.bar = bar
+      win.owner = owner
     }
     root.open = true
   }

@@ -77,7 +77,7 @@ Panel {
   onOpenedChanged: {
     if (root.opened) {
       if (!DownloadsStore.open)
-        DownloadsStore.showOn(button, root.bar)
+        DownloadsStore.showOn(button, root.bar, root)
     } else if (DownloadsStore.open) {
       DownloadsStore.hide()
     }
@@ -115,7 +115,8 @@ Panel {
             font.family: root.fontFamily
             font.pixelSize: Style.bar.iconFont
             renderType: Text.NativeRendering
-            color: (root.opened || root.hasFresh) ? root.accent : root.foreground
+            // Opening is marked by the bar's underline; accent means new files.
+            color: root.hasFresh ? root.accent : root.foreground
           }
 
           Rectangle {
