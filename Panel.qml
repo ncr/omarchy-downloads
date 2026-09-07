@@ -138,8 +138,20 @@ Panel {
             radius: height / 2
             color: root.accent
 
+            FontMetrics {
+              id: badgeMetrics
+              font: badgeLabel.font
+            }
+
             Text {
+              id: badgeLabel
               anchors.centerIn: parent
+              // Center the cap-height band, accounting for centerIn's rounded half-height.
+              // Snap the correction to device pixels to keep native text crisp.
+              readonly property real pixelRatio: QsWindow.window ? QsWindow.window.devicePixelRatio : 1
+              anchors.verticalCenterOffset: Math.round((Math.round(height / 2) - baselineOffset
+                + badgeMetrics.capitalHeight / 2)
+                * pixelRatio) / pixelRatio
               text: root.freshCount
               textFormat: Text.PlainText
               font.family: root.fontFamily
