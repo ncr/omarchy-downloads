@@ -171,9 +171,7 @@ Panel {
     }
   }
 
-  // The open state belongs to this widget regardless of whether Downloads
-  // uses a regular window or a layer-shell panel. Do not require the view
-  // to register this widget as the bar's active popout just to show a mark.
+  // Mark the open state on the edge facing the desktop.
   Rectangle {
     id: openIndicator
     readonly property bool vertical: root.bar ? root.bar.vertical : false
