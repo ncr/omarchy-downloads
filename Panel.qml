@@ -127,7 +127,8 @@ Panel {
             font.family: root.fontFamily
             font.pixelSize: Style.bar.iconFont
             renderType: Text.NativeRendering
-            color: (root.opened || root.hasFresh) ? root.accent : root.foreground
+            // Accent marks fresh files; the edge indicator marks an open view.
+            color: root.hasFresh ? root.accent : root.foreground
           }
 
           Rectangle {
@@ -169,4 +170,36 @@ Panel {
       else root.toggle()
     }
   }
+
+  // The open state belongs to this widget regardless of whether Downloads
+  // uses a regular window or a layer-shell panel. Do not require the view
+  // to register this widget as the bar's active popout just to show a mark.
+  Rectangle {
+    id: openIndicator
+    readonly property bool vertical: root.bar ? root.bar.vertical : false
+    readonly property string position: root.bar ? root.bar.position : "top"
+    readonly property int inset: Style.space(2)
+    readonly property var draggedSlot: root.bar ? root.bar.barDragSource : null
+    readonly property bool beingReordered: !!draggedSlot && draggedSlot.activeItem === root
+    // Defer to the bar if it already draws an indicator for this widget.
+    readonly property bool barDrawsIndicator: !!root.bar && root.bar.activePopout === root
+
+    visible: opacity > 0
+    opacity: root.opened && !beingReordered && !barDrawsIndicator ? 0.9 : 0
+    color: root.accent
+    radius: Math.min(width, height) / 2
+    width: vertical ? Style.space(2) : Math.round(root.openPanelIndicatorWidth)
+    height: vertical ? Math.round(root.openPanelIndicatorHeight) : Style.space(2)
+    x: vertical
+      ? (position === "left" ? parent.width - width - inset : inset)
+      : Math.round((parent.width - width) / 2)
+    y: vertical
+      ? Math.round((parent.height - height) / 2)
+      : (position === "top" ? parent.height - height - inset : inset)
+    z: 50
+    Behavior on opacity {
+      NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+    }
+  }
+
 }
