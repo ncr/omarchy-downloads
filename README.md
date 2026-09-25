@@ -1,6 +1,6 @@
 # Downloads
 
-What just landed in your download folder, one click from the Omarchy bar —
+Recent downloads, pictures and videos, one click from the Omarchy bar —
 and every row is a drag handle, so a file goes straight into the upload field,
 chat window, or editor that needs it.
 
@@ -10,6 +10,17 @@ minutes, so a finished download is visible without opening anything.
 | Tokyo Night | Catppuccin Latte |
 |---|---|
 | ![The downloads popout on a dark theme](screenshots/panel.png) | ![The same popout on a light theme](screenshots/light.png) |
+
+The **Recent files** panel merges your XDG Downloads, Pictures and Videos
+folders, newest first. **All / Downloads / Images / Videos** filters switch
+between the combined list, the download source, and image/video types across
+all three sources. Opening the panel starts on All.
+
+The compact rows keep the original panel width and row height. Images have
+small previews; videos have a still frame and duration. Hover enlarges the
+preview by 22% without moving any rows. GIF previews remain still. Video
+previews need `ffmpeg` and `ffprobe`; without them, the normal file icon remains.
+Python 3 is required for folder scanning.
 
 ## A panel you can drag out of
 
@@ -53,7 +64,8 @@ o.bind("SUPER + D", "Downloads", "omarchy-shell shell toggle jankeesvw.downloads
 
 Downloaded folders appear alongside files, sorted by modification time. They
 use a folder icon; double-click opens them in your file manager, and dragging
-hands over the folder. Contents are not scanned recursively.
+hands over the folder. Contents are not scanned recursively. Pictures and Videos contribute only
+matching media files, so logs and other sidecar files stay out of those sources.
 
 ## Settings
 
@@ -62,28 +74,43 @@ Set these on the plugin's entry in `~/.config/omarchy/shell.json`:
 | Setting | Default | What it does |
 |---|---|---|
 | `freshMinutes` | `5` | How recent a file counts as "just arrived" — drives the badge, the accent, and the first filter |
-| `folder` | XDG download dir | Watch a different folder, as a plain path |
+| `folder` | XDG download dir | Download source, as an absolute path |
+| `picturesFolder` | XDG pictures dir | Image source, as an absolute path |
+| `videosFolder` | XDG videos dir | Video source, as an absolute path |
 
 ```json
 { "id": "jankeesvw.downloads", "freshMinutes": 10 }
 ```
 
-## What it does not do
+## Refresh and limits
 
-- **Partial downloads are hidden.** `.crdownload`, `.part`, `.tmp` and friends
-  are still being written and the final name is not known yet.
-- **The list caps at 200 rows, and a refresh reads at most 2000 files.** Both
-  caps cut from the oldest end - the folder is read newest first - so a recent
-  download is never the thing that falls outside them. The panel says what it
-  left out rather than pretending the folder is smaller than it is.
-- **Not every change gets its own refresh.** A folder filling up reports one
-  change per file, and those are collapsed into a single rebuild. A folder too
-  large to watch cheaply is polled instead of watched - one read per interval
-  rather than one per file - and with the panel closed the refresh backs off.
-  Below that size nothing changes: a download appears the moment it lands.
-- **A file that grows after it appears keeps its first size.** The folder
-  watcher reports new and removed files, not writes to existing ones. Browsers
-  rename on completion, so finished downloads are accurate.
+- Partial downloads and hidden files are excluded. The active Omarchy screen
+  recording is withheld while `/tmp/omarchy-screenrecord-filename` names it;
+  it becomes available after Omarchy finalizes and clears that marker.
+- Folder scans run in a separate process. Small folders also use a Qt folder
+  watcher to trigger debounced scans after arrivals/removals. A periodic scan
+  updates changed sizes and finished recordings: every 3 seconds while open,
+  every 20 seconds while closed. Opening always refreshes.
+- Each source scans at most 5000 entries and retains at most 200 per media
+  category. The displayed filter caps at 200 rows. If a scan reaches the
+  ceiling, the panel explicitly says it is partial; it cannot promise that
+  the newest files outside that scan were seen.
+- Duplicate paths appear once. Dragging freezes list replacement until the
+  gesture ends, so background updates cannot destroy a row mid-drag.
+- Video thumbnails are generated sequentially, only when rows are created in
+  the open panel. Versioned thumbnails live in
+  `$XDG_CACHE_HOME/omarchy-downloads/thumbnails` (normally `~/.cache/...`), with
+  a limit of 256 thumbnails. Failed/unsupported media keep a file icon.
+
+## Verification
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+For UI verification, open each filter, hover first and last visible rows,
+scroll through videos, drag into another app, and check double-click and Esc.
+The panel should retain the previous compact width and row height.
 
 ## Removing it
 
@@ -91,10 +118,9 @@ Set these on the plugin's entry in `~/.config/omarchy/shell.json`:
 omarchy plugin remove jankeesvw.downloads
 ```
 
-**Nothing is left behind.** This plugin writes no cache, no config, and no
-state of its own: it reads the download folder through Qt's folder model and
-keeps everything in memory. There is no directory to clean up and nothing about
-your files is stored anywhere.
+The plugin keeps its list state in memory. Its private video-thumbnail cache
+can be removed separately from `~/.cache/omarchy-downloads` (or the matching
+location under your custom `XDG_CACHE_HOME`). Original files are never changed.
 
 If you added Hyprland window rules for an older version, remove those
 separately from your Hyprland configuration.
@@ -102,7 +128,7 @@ separately from your Hyprland configuration.
 ## Privacy
 
 Filenames never leave your machine. There is no network access, no telemetry,
-and no helper script — the plugin is QML that reads a directory listing.
+and no remote thumbnail service. Local helpers list directories and decode video frames.
 Filenames are rendered as `Text.PlainText` throughout, so a file named to look
 like markup cannot make the shell fetch a remote image.
 

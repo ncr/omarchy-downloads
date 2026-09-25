@@ -3,14 +3,14 @@ import Quickshell
 import qs.Commons
 import qs.Ui
 
-// Downloads: what just landed in the download folder, one click from the bar.
+// Recent downloads, images and videos, one click from the bar.
 //
 // The button carries a badge with the number of files that arrived within the
 // last few minutes, so a finished download is visible without opening
 // anything. Clicking opens a panel whose rows are drag handles, so a file
 // goes straight into the upload field or chat window that needs it.
 //
-// Everything that has state - the folder, the list, the popup - lives in
+// Everything that has state - the sources, the list, the popup - lives in
 // DownloadsStore, a singleton. A bar widget is instantiated once per monitor,
 // so a popup declared here would exist twice on a two-monitor setup. This
 // file is the view: a button, a badge, and a way to reach the store.
@@ -59,7 +59,8 @@ Panel {
   function applySettings() {
     var folder = String(root.setting("folder", ""))
     DownloadsStore.configure(root.setting("freshMinutes", 5),
-                             folder !== "" ? Util.fileUrl(folder) : undefined)
+                             folder, String(root.setting("picturesFolder", "")),
+                             String(root.setting("videosFolder", "")))
     DownloadsStore.fontFamily = root.fontFamily
   }
 

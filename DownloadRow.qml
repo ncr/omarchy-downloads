@@ -28,6 +28,15 @@ Item {
   implicitHeight: Style.space(34)
   height: implicitHeight
 
+  readonly property bool isImage: file && file.category === "images"
+  readonly property bool isVideo: file && file.category === "videos"
+  readonly property string previewKey: file ? file.path + ":" + file.version : ""
+  readonly property var preview: store && store.previews ? (store.previews[previewKey] || ({})) : ({})
+  function requestPreview() { if (store && isVideo) store.requestPreview(file) }
+  onFileChanged: requestPreview()
+  onStoreChanged: requestPreview()
+  Component.onCompleted: requestPreview()
+
   Drag.active: fileDrag.active
   Drag.dragType: Drag.Automatic
   Drag.supportedActions: Qt.CopyAction
@@ -80,14 +89,44 @@ Item {
       color: row.fresh ? Color.accent : "transparent"
     }
 
-    Text {
+    Item {
       Layout.alignment: Qt.AlignVCenter
-      text: (row.store && row.store.iconFor && row.file) ? String(row.store.iconFor(row.file.name, row.file.isDir) || "") : ""
-      textFormat: Text.PlainText
-      font.family: String((row.store && row.store.fontFamily) || Style.font.family || "")
-      font.pixelSize: Style.font.icon
-      renderType: Text.NativeRendering
-      color: row.fresh ? Color.accent : Color.muted
+      Layout.preferredWidth: Style.space(44)
+      Layout.preferredHeight: Style.space(30)
+      // The reserved cell fits the enlarged preview, so rows never shift and
+      // the ListView does not clip the first/last thumbnail on hover.
+      Rectangle {
+        anchors.centerIn: parent
+        width: Style.space(32); height: Style.space(22)
+        scale: mouse.containsMouse && !row.dragging ? 1.22 : 1
+        Behavior on scale { NumberAnimation { duration: 130; easing.type: Easing.OutCubic } }
+        radius: Style.space(4)
+        color: row.isImage || row.isVideo ? Util.alpha(Color.foreground, 0.06) : "transparent"
+        border.width: row.isImage || row.isVideo ? 1 : 0
+        border.color: mouse.containsMouse ? Color.accent : Util.alpha(Color.muted, 0.25)
+
+        Text {
+          anchors.centerIn: parent
+          visible: thumbnail.status !== Image.Ready
+          text: row.store ? row.store.iconFor(row.file.name, row.file.isDir) : ""
+          textFormat: Text.PlainText
+          font.family: row.store ? row.store.fontFamily : Style.font.family
+          font.pixelSize: Style.font.icon
+          color: Color.muted
+        }
+        Image {
+          id: thumbnail
+          anchors.fill: parent
+          anchors.margins: 2
+          source: row.isImage ? String(row.file.url || "") : String(row.preview.thumbnail || "")
+          sourceSize.width: 192
+          sourceSize.height: 108
+          asynchronous: true
+          fillMode: Image.PreserveAspectFit
+          // Image (not AnimatedImage) keeps GIFs and video previews still.
+        }
+
+      }
     }
 
     // The filename is chosen by whoever made the file, so PlainText, always.
@@ -109,7 +148,7 @@ Item {
     Text {
       Layout.alignment: Qt.AlignVCenter
       text: (row.store && row.store.formatAge && row.file)
-        ? String(row.store.formatAge(row.file.modified) || "")
+        ? (row.isVideo && row.preview.duration ? row.preview.duration + " · " : "") + String(row.store.formatAge(row.file.modified) || "")
           + (!row.file.isDir && row.file.size > 0 ? "  ·  " + String(row.store.formatSize(row.file.size) || "") : "")
         : ""
       textFormat: Text.PlainText

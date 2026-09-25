@@ -1,3 +1,4 @@
 singleton DownloadsStore 1.0 DownloadsStore.qml
 DownloadRow 1.0 DownloadRow.qml
 DownloadsPopup 1.0 DownloadsPopup.qml
+FolderSource 1.0 FolderSource.qml
