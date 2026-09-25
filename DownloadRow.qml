@@ -37,22 +37,15 @@ Item {
   onStoreChanged: requestPreview()
   Component.onCompleted: requestPreview()
   function clearImageZoom() {
-    zoomDelay.stop()
     if (store && store.hoverImageUrl === String(file.url || "")) store.hoverImageUrl = ""
   }
   function updateImageZoom() {
     var over = isImage && mouse.containsMouse && !mouse.pressed && !dragging
     if (over) {
-      if (store && store.hoverImageUrl !== String(file.url || "") && !zoomDelay.running) zoomDelay.start()
+      if (store) store.hoverImageUrl = String(file.url || "")
     } else clearImageZoom()
   }
   Component.onDestruction: clearImageZoom()
-  Timer {
-    id: zoomDelay
-    interval: 180
-    onTriggered: if (row.store && mouse.containsMouse && !mouse.pressed && !row.dragging)
-      row.store.hoverImageUrl = String(row.file.url || "")
-  }
 
   Drag.active: fileDrag.active
   Drag.dragType: Drag.Automatic
