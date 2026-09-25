@@ -14,7 +14,9 @@ minutes, so a finished download is visible without opening anything.
 The **Recent files** panel merges your XDG Downloads, Pictures and Videos
 folders, newest first. **All / Downloads / Images / Videos** filters switch
 between the combined list, the download source, and image/video types across
-all three sources. Opening the panel starts on All.
+all three sources. Opening the panel starts on All. Right-click Downloads,
+Images or Videos to open its configured source folder without changing the
+filter. Right-click All gives a tiny nudge because it has no single folder.
 
 The compact rows keep the original panel width and row height. Images have
 small previews; videos have a still frame and duration. Hover enlarges the

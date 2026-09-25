@@ -50,6 +50,19 @@ Singleton {
     open = true
     rebuild()
   }
+  function sourceFolder(source) {
+    if (source === "downloads") return folderPath
+    if (source === "images") return picturesPath
+    if (source === "videos") return videosPath
+    return ""
+  }
+  function openSourceFolder(source) {
+    var path = sourceFolder(source)
+    if (!path.startsWith("/")) return false
+    Quickshell.execDetached(["xdg-open", path])
+    hide()
+    return true
+  }
   function openFolder() {
     if (displayPath.startsWith("/")) Quickshell.execDetached(["xdg-open", displayPath])
   }
@@ -273,20 +286,42 @@ Singleton {
         RowLayout {
           Layout.fillWidth: true
           spacing: Style.space(12)
-          ButtonGroup {
-            options: [
-              { value: "all", label: "All" },
-              { value: "downloads", label: "Downloads" },
-              { value: "images", label: "Images" },
-              { value: "videos", label: "Videos" }
-            ]
-            value: root.filter
-            foreground: Color.foreground
-            accent: Color.accent
-            fontFamily: root.fontFamily
-            fontSize: Style.font.caption
-            focusable: false
-            onChanged: function(v) { root.filter = v }
+          Row {
+            spacing: Style.spacing.md
+            Repeater {
+              model: [
+                { value: "all", label: "All" },
+                { value: "downloads", label: "Downloads" },
+                { value: "images", label: "Images" },
+                { value: "videos", label: "Videos" }
+              ]
+              delegate: Button {
+                required property var modelData
+                text: modelData.label
+                selected: root.filter === modelData.value
+                bordered: true
+                foreground: Color.foreground
+                background: Color.background
+                accent: Color.accent
+                fontFamily: root.fontFamily
+                fontSize: Style.font.caption
+                focusable: false
+                tooltipText: modelData.value === "all" ? "" : root.plain("Right-click to open " + root.sourceFolder(modelData.value))
+                onClicked: root.filter = modelData.value
+                onRightClicked: {
+                  if (!root.openSourceFolder(modelData.value)) noFolder.restart()
+                }
+                // Translate just the painted button, leaving its layout slot
+                // and its neighbours fixed. All has no single folder to open.
+                transform: Translate { id: nudge }
+                SequentialAnimation {
+                  id: noFolder
+                  NumberAnimation { target: nudge; property: "x"; from: 0; to: -Style.space(2); duration: 40 }
+                  NumberAnimation { target: nudge; property: "x"; to: Style.space(2); duration: 60 }
+                  NumberAnimation { target: nudge; property: "x"; to: 0; duration: 50 }
+                }
+              }
+            }
           }
           Item { Layout.fillWidth: true }
           // Reuse the shell's themed controls for the time and source filters.
