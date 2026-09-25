@@ -122,7 +122,8 @@ PanelWindow {
     readonly property real previewGap: Style.space(12)
     readonly property real roomRight: popup.width - card.x - card.width - previewGap - popup.gap
     readonly property real roomLeft: card.x - previewGap - popup.gap
-    readonly property bool onRight: roomRight >= card.width - Style.space(24) || roomRight >= roomLeft
+    // Choose the freer side of the actual panel, not a fixed screen side.
+    readonly property bool onRight: roomRight >= roomLeft
     width: Math.max(0, Math.min(card.width - Style.space(24), onRight ? roomRight : roomLeft))
     height: Math.min(popup.height - popup.gap * 2, largeImage.implicitWidth > 0
       ? (width - Style.space(8)) * largeImage.implicitHeight / largeImage.implicitWidth + Style.space(8)
