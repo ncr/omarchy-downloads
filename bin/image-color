@@ -8,13 +8,15 @@ import subprocess
 import sys
 from urllib.parse import unquote, urlparse
 
+BRIGHTNESS = 0.70
+
 try:
     uri = urlparse(sys.argv[1])
     if uri.scheme != "file" or uri.netloc not in ("", "localhost"):
         raise ValueError("local images only")
     path = Path(unquote(uri.path))
     stat = path.stat()
-    key = hashlib.sha256((str(path) + str(stat.st_mtime_ns) + str(stat.st_size)).encode()).hexdigest()
+    key = hashlib.sha256(json.dumps([str(path), stat.st_mtime_ns, stat.st_size, BRIGHTNESS]).encode()).hexdigest()
     cache = Path(os.environ.get("XDG_CACHE_HOME", str(Path.home() / ".cache"))) / "omarchy-downloads" / "colors"
     cache.mkdir(parents=True, exist_ok=True)
     target = cache / (key + ".json")
@@ -24,7 +26,7 @@ try:
         data = subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-protocol_whitelist", "file,pipe", "-threads", "1", "-i", str(path), "-frames:v", "1", "-vf", "scale=1:1:flags=area", "-threads", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1"], capture_output=True, timeout=3, check=True).stdout
         if len(data) != 3:
             raise ValueError("invalid colour sample")
-        result = {"color": "#" + "".join(f"{round(c * 0.28):02x}" for c in data)}
+        result = {"color": "#" + "".join(f"{round(c * BRIGHTNESS):02x}" for c in data)}
         temporary = target.with_suffix(f".{os.getpid()}.tmp")
         temporary.write_text(json.dumps(result))
         temporary.replace(target)

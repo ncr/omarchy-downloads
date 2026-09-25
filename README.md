@@ -23,7 +23,7 @@ small previews; videos have a still frame and duration. Hovering an image row sh
 is the panel width minus 24 themed pixels, with a 12px gap; on narrow screens
 it fits the available side space. A stable 4:3 canvas fits every image without
 resizing between portrait and landscape files. The canvas background uses a
-local average of the image colour, darkened by 72%, and crossfades with it.
+local average of the image colour, darkened by 30%, and crossfades with it.
 Colour decoding runs separately, never delaying the image; results are cached
 under `~/.cache/omarchy-downloads/colors` (up to 256 entries). Unsupported
 formats or a missing ffmpeg keep the theme background. The list stays fully visible
