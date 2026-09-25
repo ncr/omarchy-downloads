@@ -41,10 +41,7 @@ Item {
     if (store && store.hoverImageUrl === String(file.url || "")) store.hoverImageUrl = ""
   }
   function updateImageZoom() {
-    var point = thumbnailSlot.mapFromItem(mouse, mouse.mouseX, mouse.mouseY)
     var over = isImage && mouse.containsMouse && !mouse.pressed && !dragging
-      && point.x >= 0 && point.x < thumbnailSlot.width
-      && point.y >= 0 && point.y < thumbnailSlot.height
     if (over) {
       if (store && store.hoverImageUrl !== String(file.url || "") && !zoomDelay.running) zoomDelay.start()
     } else clearImageZoom()

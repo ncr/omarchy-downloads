@@ -19,10 +19,10 @@ Images or Videos to open its configured source folder without changing the
 filter. Right-click All gives a tiny nudge because it has no single folder.
 
 The compact rows keep the original panel width and row height. Images have
-small previews; videos have a still frame and duration. Hovering an image thumbnail shows a larger preview beside the panel, preserving aspect ratio. Its width
+small previews; videos have a still frame and duration. Hovering an image row shows a larger preview beside the panel, preserving aspect ratio. Its width
 is the panel width minus 24 themed pixels, with a 12px gap; on narrow screens
 it fits the available side space. Tall images fit the screen height. The list
-stays fully visible and reachable while moving between thumbnails. The preview dismisses on pointer exit, scrolling or
+stays fully visible and reachable while moving between rows. The preview dismisses on pointer exit, scrolling or
 pressing to drag, and never moves rows or intercepts input. Video thumbnails
 retain the subtle 22% hover enlargement. GIF previews remain still. Video
 previews need `ffmpeg` and `ffprobe`; without them, the normal file icon remains.
