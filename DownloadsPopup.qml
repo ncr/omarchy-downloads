@@ -16,6 +16,8 @@ PanelWindow {
   property bool open: false
   property bool dragging: false
   property url imagePreviewSource: ""
+  onImagePreviewSourceChanged: imagePreview.requestImage()
+  onDraggingChanged: if (dragging) imagePreview.reset()
   property real contentWidth: Style.space(520)
   property real contentHeight: Style.space(300)
   property bool focusPrimed: false
@@ -78,6 +80,7 @@ PanelWindow {
       body.forceActiveFocus()
       if (bar) bar.requestPopout(coordinatorKey)
     } else {
+      imagePreview.reset()
       prime.stop()
       if (bar && bar.activePopout === coordinatorKey) bar.releasePopout(coordinatorKey)
     }
@@ -125,26 +128,108 @@ PanelWindow {
     // Choose the freer side of the actual panel, not a fixed screen side.
     readonly property bool onRight: roomRight >= roomLeft
     width: Math.max(0, Math.min(card.width - Style.space(24), onRight ? roomRight : roomLeft))
-    height: Math.min(popup.height - popup.gap * 2, largeImage.implicitWidth > 0
-      ? (width - Style.space(8)) * largeImage.implicitHeight / largeImage.implicitWidth + Style.space(8)
-      : 0)
+    // A stable 4:3 canvas prevents portrait/landscape changes from jumping.
+    height: Math.min(popup.height - popup.gap * 2, width * 0.75)
     x: onRight ? card.x + card.width + previewGap : card.x - previewGap - width
     y: Math.max(popup.gap, Math.min(card.y, popup.height - height - popup.gap))
-    visible: popup.open && !popup.dragging && String(popup.imagePreviewSource) !== ""
-      && largeImage.status === Image.Ready && width >= Style.space(80)
+    visible: popup.open && !popup.dragging && hasImage && width >= Style.space(80)
     color: Color.popups.background
     border.color: Color.popups.border
     border.width: Math.max(1, Style.spacing.hairline)
     radius: Style.cornerRadius
-    Image {
-      id: largeImage
+    property bool hasImage: false
+    property int front: 0
+    property int pending: -1
+    property string wanted: ""
+    property real blend: 1
+
+    function reset() {
+      leaveDelay.stop()
+      fade.stop()
+      hasImage = false
+      pending = -1
+      wanted = ""
+      blend = 1
+      imageA.source = ""
+      imageB.source = ""
+    }
+    function requestImage() {
+      var url = String(popup.imagePreviewSource)
+      if (!url) {
+        // Bridge tiny gaps between rows; there is no delay when entering one.
+        leaveDelay.restart()
+        return
+      }
+      leaveDelay.stop()
+      if (url === wanted) { acceptImage(pending); return }
+      wanted = url
+      // Interrupt the previous transition; never queue old hover requests.
+      fade.stop()
+      blend = 1
+      var current = front === 0 ? imageA : imageB
+      if (hasImage && String(current.source) === url) { pending = -1; return }
+      pending = front === 0 ? 1 : 0
+      var next = pending === 0 ? imageA : imageB
+      next.source = url
+      acceptImage(pending) // Cached images may already be Ready.
+    }
+    function acceptImage(index) {
+      if (index < 0 || index !== pending) return
+      var next = index === 0 ? imageA : imageB
+      if (String(next.source) !== wanted || wanted !== String(popup.imagePreviewSource)) return
+      if (next.status === Image.Error) { reset(); return }
+      if (next.status !== Image.Ready) return
+      var animate = hasImage
+      front = index
+      pending = -1
+      hasImage = true
+      blend = animate ? 0 : 1
+      if (animate) fade.restart()
+    }
+    Timer {
+      id: leaveDelay
+      interval: 70
+      onTriggered: imagePreview.reset()
+    }
+    NumberAnimation {
+      id: fade
+      target: imagePreview; property: "blend"
+      to: 1; duration: 90
+      easing.type: Easing.OutQuad
+    }
+    Rectangle {
       anchors.fill: parent
       anchors.margins: Style.space(4)
-      source: popup.imagePreviewSource
-      sourceSize.width: 1600
-      sourceSize.height: 1600
-      asynchronous: true
-      fillMode: Image.PreserveAspectFit
+      color: Color.popups.background
+      z: imagePreview.front === 0 ? 1 : 0
+      opacity: imagePreview.front === 0 ? imagePreview.blend : 1
+      visible: imagePreview.front === 0 || imagePreview.blend < 1
+      Image {
+        id: imageA
+        anchors.fill: parent
+        sourceSize.width: 1600
+        sourceSize.height: 1600
+        asynchronous: true
+        fillMode: Image.PreserveAspectFit
+        onStatusChanged: imagePreview.acceptImage(0)
+      }
+    }
+    Rectangle {
+      anchors.fill: parent
+      anchors.margins: Style.space(4)
+      color: Color.popups.background
+      z: imagePreview.front === 1 ? 1 : 0
+      opacity: imagePreview.front === 1 ? imagePreview.blend : 1
+      visible: imagePreview.front === 1 || imagePreview.blend < 1
+      Image {
+        id: imageB
+        anchors.fill: parent
+        sourceSize.width: 1600
+        sourceSize.height: 1600
+        asynchronous: true
+        fillMode: Image.PreserveAspectFit
+        onStatusChanged: imagePreview.acceptImage(1)
+      }
     }
   }
 
