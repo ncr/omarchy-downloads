@@ -22,7 +22,11 @@ The compact rows keep the original panel width and row height. Images have
 small previews; videos have a still frame and duration. Hovering an image row shows a larger preview beside the panel, preserving aspect ratio. Its width
 is the panel width minus 24 themed pixels, with a 12px gap; on narrow screens
 it fits the available side space. A stable 4:3 canvas fits every image without
-resizing between portrait and landscape files. The list stays fully visible
+resizing between portrait and landscape files. The canvas background uses a
+local average of the image colour, darkened by 72%, and crossfades with it.
+Colour decoding runs separately, never delaying the image; results are cached
+under `~/.cache/omarchy-downloads/colors` (up to 256 entries). Unsupported
+formats or a missing ffmpeg keep the theme background. The list stays fully visible
 and reachable while moving between rows. New previews start loading immediately
 and crossfade over 90ms once ready. A newer hover interrupts the previous
 transition; outdated loads never become visible. The previous image remains

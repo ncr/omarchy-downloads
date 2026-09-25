@@ -204,6 +204,10 @@ PanelWindow {
       z: imagePreview.front === 0 ? 1 : 0
       opacity: imagePreview.front === 0 ? imagePreview.blend : 1
       visible: imagePreview.front === 0 || imagePreview.blend < 1
+      ImageTint {
+        anchors.fill: parent
+        source: imageA.source
+      }
       Image {
         id: imageA
         anchors.fill: parent
@@ -221,6 +225,10 @@ PanelWindow {
       z: imagePreview.front === 1 ? 1 : 0
       opacity: imagePreview.front === 1 ? imagePreview.blend : 1
       visible: imagePreview.front === 1 || imagePreview.blend < 1
+      ImageTint {
+        anchors.fill: parent
+        source: imageB.source
+      }
       Image {
         id: imageB
         anchors.fill: parent
