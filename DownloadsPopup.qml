@@ -15,6 +15,7 @@ PanelWindow {
   property QtObject owner: null
   property bool open: false
   property bool dragging: false
+  property url imagePreviewSource: ""
   property real contentWidth: Style.space(520)
   property real contentHeight: Style.space(300)
   property bool focusPrimed: false
@@ -111,6 +112,38 @@ PanelWindow {
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons; onPressed: popup.close() }
       }
+    }
+  }
+
+  // Keep the large image entirely outside the list, so every next thumbnail
+  // remains visible and reachable. This surface deliberately has no mouse area.
+  Rectangle {
+    id: imagePreview
+    readonly property real previewGap: Style.space(12)
+    readonly property real roomRight: popup.width - card.x - card.width - previewGap - popup.gap
+    readonly property real roomLeft: card.x - previewGap - popup.gap
+    readonly property bool onRight: roomRight >= card.width - Style.space(24) || roomRight >= roomLeft
+    width: Math.max(0, Math.min(card.width - Style.space(24), onRight ? roomRight : roomLeft))
+    height: Math.min(popup.height - popup.gap * 2, largeImage.implicitWidth > 0
+      ? (width - Style.space(8)) * largeImage.implicitHeight / largeImage.implicitWidth + Style.space(8)
+      : 0)
+    x: onRight ? card.x + card.width + previewGap : card.x - previewGap - width
+    y: Math.max(popup.gap, Math.min(card.y, popup.height - height - popup.gap))
+    visible: popup.open && !popup.dragging && String(popup.imagePreviewSource) !== ""
+      && largeImage.status === Image.Ready && width >= Style.space(80)
+    color: Color.popups.background
+    border.color: Color.popups.border
+    border.width: Math.max(1, Style.spacing.hairline)
+    radius: Style.cornerRadius
+    Image {
+      id: largeImage
+      anchors.fill: parent
+      anchors.margins: Style.space(4)
+      source: popup.imagePreviewSource
+      sourceSize.width: 1600
+      sourceSize.height: 1600
+      asynchronous: true
+      fillMode: Image.PreserveAspectFit
     }
   }
 

@@ -25,6 +25,7 @@ Singleton {
   property double now: Date.now()
   property bool open: false
   property string draggingUrl: ""
+  property string hoverImageUrl: ""
   property bool pendingRebuild: false
   readonly property int maxRows: 200
   readonly property string displayPath: filter === "images" ? picturesPath : filter === "videos" ? videosPath : folderPath
@@ -94,9 +95,12 @@ Singleton {
     var next = merged.slice(0, maxRows)
     if (JSON.stringify(next) !== JSON.stringify(files)) files = next
   }
-  onFilterChanged: rebuild()
-  onShowAllChanged: rebuild()
-  onDraggingUrlChanged: if (draggingUrl === "" && pendingRebuild) rebuild()
+  onFilterChanged: { hoverImageUrl = ""; rebuild() }
+  onShowAllChanged: { hoverImageUrl = ""; rebuild() }
+  onDraggingUrlChanged: {
+    hoverImageUrl = ""
+    if (draggingUrl === "" && pendingRebuild) rebuild()
+  }
   onFreshMinutesChanged: rebuild()
 
   FolderSource {
@@ -146,6 +150,7 @@ Singleton {
     }
   }
   onOpenChanged: {
+    hoverImageUrl = ""
     if (open) previewNext.restart()
     else previewQueue = []
   }
@@ -219,6 +224,7 @@ Singleton {
 
     open: root.open
     dragging: root.draggingUrl !== ""
+    imagePreviewSource: root.hoverImageUrl
     contentWidth: Style.space(520)
 
     // The height follows the list instead of being a fixed box: with two
@@ -361,6 +367,7 @@ Singleton {
           model: root.open ? root.files : []
           cacheBuffer: 0
           boundsBehavior: Flickable.StopAtBounds
+          onMovementStarted: root.hoverImageUrl = ""
 
           delegate: DownloadRow {
             required property var modelData

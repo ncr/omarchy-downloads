@@ -36,6 +36,26 @@ Item {
   onFileChanged: requestPreview()
   onStoreChanged: requestPreview()
   Component.onCompleted: requestPreview()
+  function clearImageZoom() {
+    zoomDelay.stop()
+    if (store && store.hoverImageUrl === String(file.url || "")) store.hoverImageUrl = ""
+  }
+  function updateImageZoom() {
+    var point = thumbnailSlot.mapFromItem(mouse, mouse.mouseX, mouse.mouseY)
+    var over = isImage && mouse.containsMouse && !mouse.pressed && !dragging
+      && point.x >= 0 && point.x < thumbnailSlot.width
+      && point.y >= 0 && point.y < thumbnailSlot.height
+    if (over) {
+      if (store && store.hoverImageUrl !== String(file.url || "") && !zoomDelay.running) zoomDelay.start()
+    } else clearImageZoom()
+  }
+  Component.onDestruction: clearImageZoom()
+  Timer {
+    id: zoomDelay
+    interval: 180
+    onTriggered: if (row.store && mouse.containsMouse && !mouse.pressed && !row.dragging)
+      row.store.hoverImageUrl = String(row.file.url || "")
+  }
 
   Drag.active: fileDrag.active
   Drag.dragType: Drag.Automatic
@@ -90,6 +110,7 @@ Item {
     }
 
     Item {
+      id: thumbnailSlot
       Layout.alignment: Qt.AlignVCenter
       Layout.preferredWidth: Style.space(44)
       Layout.preferredHeight: Style.space(30)
@@ -98,7 +119,7 @@ Item {
       Rectangle {
         anchors.centerIn: parent
         width: Style.space(32); height: Style.space(22)
-        scale: mouse.containsMouse && !row.dragging ? 1.22 : 1
+        scale: mouse.containsMouse && row.isVideo && !row.dragging ? 1.22 : 1
         Behavior on scale { NumberAnimation { duration: 130; easing.type: Easing.OutCubic } }
         radius: Style.space(4)
         color: row.isImage || row.isVideo ? Util.alpha(Color.foreground, 0.06) : "transparent"
@@ -170,11 +191,15 @@ Item {
     id: mouse
     anchors.fill: parent
     hoverEnabled: true
+    onPositionChanged: row.updateImageZoom()
+    onContainsMouseChanged: row.updateImageZoom()
+    onPressedChanged: row.updateImageZoom()
     cursorShape: fileDrag.active ? Qt.ClosedHandCursor : Qt.OpenHandCursor
     // Grab a picture of the row on press, so the drag carries something you
     // can recognise. Asynchronous, but press comes well before the drag
     // threshold; if it is not ready the drag simply has no image.
     onPressed: {
+      row.clearImageZoom()
       row.grabToImage(function(result) {
         if (result) row.Drag.imageSource = result.url
       })
