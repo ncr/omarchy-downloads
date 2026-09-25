@@ -258,24 +258,6 @@ Singleton {
             color: Color.foreground
           }
 
-          // Reuse the shell's themed controls for the time and source filters.
-          ButtonGroup {
-            Layout.alignment: Qt.AlignVCenter
-            options: [
-              { value: "fresh", label: "Last " + root.freshMinutes + " min" },
-              { value: "all", label: "All" }
-            ]
-            value: root.showAll ? "all" : "fresh"
-            foreground: Color.foreground
-            accent: Color.accent
-            fontFamily: root.fontFamily
-            fontSize: Style.font.caption
-            // The window has no panel cursor to hand around, so the group is
-            // mouse-only and stays out of the Tab order.
-            focusable: false
-            onChanged: function(v) { root.showAll = (v === "all") }
-          }
-
           Button {
             Layout.alignment: Qt.AlignVCenter
             iconText: root.iconFolder
@@ -288,20 +270,43 @@ Singleton {
           }
         }
 
-        ButtonGroup {
-          options: [
-            { value: "all", label: "All" },
-            { value: "downloads", label: "Downloads" },
-            { value: "images", label: "Images" },
-            { value: "videos", label: "Videos" }
-          ]
-          value: root.filter
-          foreground: Color.foreground
-          accent: Color.accent
-          fontFamily: root.fontFamily
-          fontSize: Style.font.caption
-          focusable: false
-          onChanged: function(v) { root.filter = v }
+        RowLayout {
+          Layout.fillWidth: true
+          spacing: Style.space(12)
+          ButtonGroup {
+            options: [
+              { value: "all", label: "All" },
+              { value: "downloads", label: "Downloads" },
+              { value: "images", label: "Images" },
+              { value: "videos", label: "Videos" }
+            ]
+            value: root.filter
+            foreground: Color.foreground
+            accent: Color.accent
+            fontFamily: root.fontFamily
+            fontSize: Style.font.caption
+            focusable: false
+            onChanged: function(v) { root.filter = v }
+          }
+          Item { Layout.fillWidth: true }
+          // Reuse the shell's themed controls for the time and source filters.
+          ButtonGroup {
+            Layout.alignment: Qt.AlignVCenter
+            options: [
+              { value: "fresh", label: root.freshMinutes + " minutes" },
+              { value: "all", label: "All time" }
+            ]
+            value: root.showAll ? "all" : "fresh"
+            foreground: Color.foreground
+            accent: Color.accent
+            fontFamily: root.fontFamily
+            fontSize: Style.font.caption
+            // The window has no panel cursor to hand around, so the group is
+            // mouse-only and stays out of the Tab order.
+            focusable: false
+            onChanged: function(v) { root.showAll = (v === "all") }
+          }
+
         }
 
         Rectangle {

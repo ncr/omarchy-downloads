@@ -59,7 +59,7 @@ o.bind("SUPER + D", "Downloads", "omarchy-shell shell toggle jankeesvw.downloads
 | Right-click the bar button | open the folder in your file manager |
 | Drag a row | hand the file to whatever is under the cursor |
 | Double-click a row | open the file |
-| `Last N min` / `All` | show only what just arrived, or the whole folder |
+| `N minutes` / `All time` | show only what just arrived, or the whole folder |
 | `Esc` or click outside | close |
 
 Downloaded folders appear alongside files, sorted by modification time. They
