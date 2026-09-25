@@ -306,7 +306,6 @@ Singleton {
                 fontFamily: root.fontFamily
                 fontSize: Style.font.caption
                 focusable: false
-                tooltipText: modelData.value === "all" ? "" : root.plain("Right-click to open " + root.sourceFolder(modelData.value))
                 onClicked: root.filter = modelData.value
                 onRightClicked: {
                   if (!root.openSourceFolder(modelData.value)) noFolder.restart()
