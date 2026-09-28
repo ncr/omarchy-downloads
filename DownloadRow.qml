@@ -24,6 +24,13 @@ Item {
 
   readonly property bool dragging: store !== null && !!file && store.draggingUrl === file.url
   readonly property bool fresh: !!(file && file.fresh === true)
+  readonly property string rowFont: String((store && store.fontFamily) || Style.font.family || "")
+
+  FontMetrics {
+    id: metadataMetrics
+    font.family: row.rowFont
+    font.pixelSize: Style.font.caption
+  }
 
   implicitHeight: Style.space(34)
   height: implicitHeight
@@ -79,30 +86,31 @@ Item {
     border.color: Color.accent
   }
 
+  // Freshness is a small edge marker, without a separate column of padding.
+  Rectangle {
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    width: Style.space(2)
+    height: Style.space(8)
+    radius: width / 2
+    visible: row.fresh
+    color: Color.accent
+  }
+
   // A RowLayout rather than a Row: the name has to take whatever is left
   // after the icons and the age, and only a layout knows that width. With a
   // plain Row the name and the age both sized themselves from the full width
   // and printed straight over each other.
   RowLayout {
     anchors.fill: parent
-    anchors.leftMargin: Style.space(8)
-    anchors.rightMargin: Style.space(8)
-    spacing: Style.space(8)
-
-    // Marks a file that arrived within the fresh window: the same signal the
-    // bar badge counts, so the row you came for is the one that stands out.
-    Rectangle {
-      Layout.alignment: Qt.AlignVCenter
-      implicitWidth: Style.space(5)
-      implicitHeight: Style.space(5)
-      radius: implicitWidth / 2
-      color: row.fresh ? Color.accent : "transparent"
-    }
+    anchors.leftMargin: Style.space(4)
+    anchors.rightMargin: Style.space(4)
+    spacing: 0
 
     Item {
       id: thumbnailSlot
       Layout.alignment: Qt.AlignVCenter
-      Layout.preferredWidth: Style.space(44)
+      Layout.preferredWidth: Style.space(40)
       Layout.preferredHeight: Style.space(30)
       // The reserved cell fits the enlarged preview, so rows never shift and
       // the ListView does not clip the first/last thumbnail on hover.
@@ -146,11 +154,13 @@ Item {
     Text {
       Layout.fillWidth: true
       Layout.preferredWidth: 0
+      Layout.leftMargin: Style.space(6)
+      Layout.rightMargin: Style.space(16)
       Layout.alignment: Qt.AlignVCenter
       text: row.file ? String(row.file.name || "") : ""
       textFormat: Text.PlainText
       elide: Text.ElideMiddle
-      font.family: String((row.store && row.store.fontFamily) || Style.font.family || "")
+      font.family: row.rowFont
       font.pixelSize: Style.font.body
       renderType: Text.NativeRendering
       color: Color.foreground
@@ -158,12 +168,43 @@ Item {
 
     Text {
       Layout.alignment: Qt.AlignVCenter
-      text: (row.store && row.store.formatAge && row.file)
-        ? (row.isVideo && row.preview.duration ? row.preview.duration + " · " : "") + String(row.store.formatAge(row.file.modified) || "")
-          + (!row.file.isDir && row.file.size > 0 ? "  ·  " + String(row.store.formatSize(row.file.size) || "") : "")
-        : ""
+      Layout.rightMargin: Style.space(12)
+      visible: row.isVideo && !!row.preview.duration
+      text: String(row.preview.duration || "")
       textFormat: Text.PlainText
-      font.family: String((row.store && row.store.fontFamily) || Style.font.family || "")
+      font.family: row.rowFont
+      font.pixelSize: Style.font.caption
+      renderType: Text.NativeRendering
+      color: Color.muted
+    }
+
+    // Fixed, font-measured columns keep dates and sizes aligned across rows.
+    Text {
+      Layout.alignment: Qt.AlignVCenter
+      Layout.preferredWidth: Math.ceil(metadataMetrics.advanceWidth("just now"))
+      Layout.minimumWidth: Layout.preferredWidth
+      Layout.maximumWidth: Layout.preferredWidth
+      text: row.store && row.file ? String(row.store.formatAge(row.file.modified) || "") : ""
+      horizontalAlignment: Text.AlignRight
+      elide: Text.ElideRight
+      textFormat: Text.PlainText
+      font.family: row.rowFont
+      font.pixelSize: Style.font.caption
+      renderType: Text.NativeRendering
+      color: Color.muted
+    }
+    Text {
+      Layout.alignment: Qt.AlignVCenter
+      Layout.leftMargin: Style.space(12)
+      Layout.preferredWidth: Math.ceil(metadataMetrics.advanceWidth("999.9 MB"))
+      Layout.minimumWidth: Layout.preferredWidth
+      Layout.maximumWidth: Layout.preferredWidth
+      text: row.store && row.file && !row.file.isDir && row.file.size > 0
+        ? String(row.store.formatSize(row.file.size) || "") : ""
+      horizontalAlignment: Text.AlignRight
+      elide: Text.ElideRight
+      textFormat: Text.PlainText
+      font.family: row.rowFont
       font.pixelSize: Style.font.caption
       renderType: Text.NativeRendering
       color: Color.muted
