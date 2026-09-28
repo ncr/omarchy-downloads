@@ -36,16 +36,16 @@ Item {
   onFileChanged: requestPreview()
   onStoreChanged: requestPreview()
   Component.onCompleted: requestPreview()
-  function clearImageZoom() {
-    if (store && store.hoverImageUrl === String(file.url || "")) store.hoverImageUrl = ""
+  function clearMediaPreview() {
+    if (store && store.hoverMedia && store.hoverMedia.url === file.url) store.hoverMedia = null
   }
-  function updateImageZoom() {
-    var over = isImage && mouse.containsMouse && !mouse.pressed && !dragging
+  function updateMediaPreview() {
+    var over = (isImage || isVideo) && mouse.containsMouse && !mouse.pressed && !dragging
     if (over) {
-      if (store) store.hoverImageUrl = String(file.url || "")
-    } else clearImageZoom()
+      if (store) store.hoverMedia = file
+    } else clearMediaPreview()
   }
-  Component.onDestruction: clearImageZoom()
+  Component.onDestruction: clearMediaPreview()
 
   Drag.active: fileDrag.active
   Drag.dragType: Drag.Automatic
@@ -181,15 +181,15 @@ Item {
     id: mouse
     anchors.fill: parent
     hoverEnabled: true
-    onPositionChanged: row.updateImageZoom()
-    onContainsMouseChanged: row.updateImageZoom()
-    onPressedChanged: row.updateImageZoom()
+    onPositionChanged: row.updateMediaPreview()
+    onContainsMouseChanged: row.updateMediaPreview()
+    onPressedChanged: row.updateMediaPreview()
     cursorShape: fileDrag.active ? Qt.ClosedHandCursor : Qt.OpenHandCursor
     // Grab a picture of the row on press, so the drag carries something you
     // can recognise. Asynchronous, but press comes well before the drag
     // threshold; if it is not ready the drag simply has no image.
     onPressed: {
-      row.clearImageZoom()
+      row.clearMediaPreview()
       row.grabToImage(function(result) {
         if (result) row.Drag.imageSource = result.url
       })

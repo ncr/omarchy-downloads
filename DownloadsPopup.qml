@@ -16,8 +16,33 @@ PanelWindow {
   property bool open: false
   property bool dragging: false
   property url imagePreviewSource: ""
-  onImagePreviewSourceChanged: imagePreview.requestImage()
-  onDraggingChanged: if (dragging) imagePreview.reset()
+  property url videoPreviewSource: ""
+  property url videoPreviewPoster: ""
+  property url heldVideoSource: ""
+  property url heldVideoPoster: ""
+  onImagePreviewSourceChanged: {
+    if (String(imagePreviewSource) !== "") clearVideo()
+    imagePreview.requestImage()
+  }
+  onVideoPreviewSourceChanged: {
+    if (String(videoPreviewSource) !== "") {
+      videoLeave.stop()
+      imagePreview.reset()
+      heldVideoPoster = videoPreviewPoster
+      heldVideoSource = videoPreviewSource
+    } else if (String(imagePreviewSource) !== "") clearVideo()
+    else videoLeave.restart()
+  }
+  onVideoPreviewPosterChanged: {
+    if (String(videoPreviewSource) === String(heldVideoSource)) heldVideoPoster = videoPreviewPoster
+  }
+  function clearVideo() {
+    videoLeave.stop()
+    heldVideoSource = ""
+    heldVideoPoster = ""
+  }
+  Timer { id: videoLeave; interval: 70; onTriggered: popup.clearVideo() }
+  onDraggingChanged: if (dragging) { imagePreview.reset(); clearVideo() }
   property real contentWidth: Style.space(520)
   property real contentHeight: Style.space(300)
   property bool focusPrimed: false
@@ -81,6 +106,7 @@ PanelWindow {
       if (bar) bar.requestPopout(coordinatorKey)
     } else {
       imagePreview.reset()
+      clearVideo()
       prime.stop()
       if (bar && bar.activePopout === coordinatorKey) bar.releasePopout(coordinatorKey)
     }
@@ -132,11 +158,26 @@ PanelWindow {
     height: Math.min(popup.height - popup.gap * 2, width * 0.75)
     x: onRight ? card.x + card.width + previewGap : card.x - previewGap - width
     y: Math.max(popup.gap, Math.min(card.y, popup.height - height - popup.gap))
-    visible: popup.open && !popup.dragging && hasImage && width >= Style.space(80)
+    visible: popup.open && !popup.dragging && (hasImage || String(popup.heldVideoSource) !== "") && width >= Style.space(80)
     color: Color.popups.background
     border.color: Color.popups.border
     border.width: Math.max(1, Style.spacing.hairline)
     radius: Style.cornerRadius
+    Loader {
+      id: videoLoader
+      z: 2
+      anchors.fill: parent
+      anchors.margins: Style.space(4)
+      active: popup.open && !popup.dragging && String(popup.heldVideoSource) !== ""
+      sourceComponent: Component {
+        VideoPreview {
+          source: popup.heldVideoSource
+          poster: popup.heldVideoPoster
+          playing: popup.open && !popup.dragging && String(popup.videoPreviewSource) !== ""
+            && String(popup.videoPreviewSource) === String(popup.heldVideoSource)
+        }
+      }
+    }
     property bool hasImage: false
     property int front: 0
     property int pending: -1

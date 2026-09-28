@@ -25,7 +25,14 @@ Singleton {
   property double now: Date.now()
   property bool open: false
   property string draggingUrl: ""
-  property string hoverImageUrl: ""
+  property var hoverMedia: null
+  readonly property string hoverImageUrl: hoverMedia && hoverMedia.category === "images" ? String(hoverMedia.url || "") : ""
+  readonly property string hoverVideoUrl: hoverMedia && hoverMedia.category === "videos" ? String(hoverMedia.url || "") : ""
+  readonly property string hoverVideoPoster: {
+    if (!hoverMedia || hoverMedia.category !== "videos") return ""
+    var preview = previews[hoverMedia.path + ":" + hoverMedia.version]
+    return preview ? String(preview.thumbnail || "") : ""
+  }
   property bool pendingRebuild: false
   readonly property int maxRows: 200
   readonly property string displayPath: filter === "images" ? picturesPath : filter === "videos" ? videosPath : folderPath
@@ -95,10 +102,10 @@ Singleton {
     var next = merged.slice(0, maxRows)
     if (JSON.stringify(next) !== JSON.stringify(files)) files = next
   }
-  onFilterChanged: { hoverImageUrl = ""; rebuild() }
-  onShowAllChanged: { hoverImageUrl = ""; rebuild() }
+  onFilterChanged: { hoverMedia = null; rebuild() }
+  onShowAllChanged: { hoverMedia = null; rebuild() }
   onDraggingUrlChanged: {
-    hoverImageUrl = ""
+    hoverMedia = null
     if (draggingUrl === "" && pendingRebuild) rebuild()
   }
   onFreshMinutesChanged: rebuild()
@@ -150,7 +157,7 @@ Singleton {
     }
   }
   onOpenChanged: {
-    hoverImageUrl = ""
+    hoverMedia = null
     if (open) previewNext.restart()
     else previewQueue = []
   }
@@ -225,6 +232,8 @@ Singleton {
     open: root.open
     dragging: root.draggingUrl !== ""
     imagePreviewSource: root.hoverImageUrl
+    videoPreviewSource: root.hoverVideoUrl
+    videoPreviewPoster: root.hoverVideoPoster
     contentWidth: Style.space(520)
 
     // The height follows the list instead of being a fixed box: with two
@@ -367,7 +376,7 @@ Singleton {
           model: root.open ? root.files : []
           cacheBuffer: 0
           boundsBehavior: Flickable.StopAtBounds
-          onMovementStarted: root.hoverImageUrl = ""
+          onMovementStarted: root.hoverMedia = null
 
           delegate: DownloadRow {
             required property var modelData

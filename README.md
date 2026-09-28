@@ -34,6 +34,11 @@ while loading, and a 70ms exit grace bridges the small gaps between rows. The pr
 pressing to drag, and never moves rows or intercepts input. Video thumbnails
 retain the subtle 22% hover enlargement. GIF previews remain still. Video
 previews need `ffmpeg` and `ffprobe`; without them, the normal file icon remains.
+Hovering a video row plays it silently on a loop in the same side canvas.
+The cached thumbnail appears while the first frame loads. Moving to another
+file replaces the active player source immediately; leaving pauses playback,
+and closing the panel or starting a drag releases the player. This needs the
+Qt 6 Multimedia QML module (`qt6-multimedia` on Arch).
 Python 3 is required for folder scanning.
 
 ## A panel you can drag out of
