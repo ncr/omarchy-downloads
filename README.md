@@ -7,39 +7,34 @@ chat window, or editor that needs it.
 The bar button carries a badge counting the files that arrived in the last few
 minutes, so a finished download is visible without opening anything.
 
-| Tokyo Night | Catppuccin Latte |
-|---|---|
-| ![The downloads popout on a dark theme](screenshots/panel.png) | ![The same popout on a light theme](screenshots/light.png) |
+![Recent files with an image preview](screenshots/recent-files.png)
 
 The **Recent files** panel merges your XDG Downloads, Pictures and Videos
-folders, newest first. **All / Downloads / Images / Videos** filters switch
-between the combined list, the download source, and image/video types across
-all three sources. Opening the panel starts on All. Right-click Downloads,
-Images or Videos to open its configured source folder without changing the
-filter. Right-click All gives a tiny nudge because it has no single folder.
+folders, newest first. **All / Downloads / Images / Videos** switches between
+the combined list, the download source, and image/video types across all three
+sources. Opening the panel starts on All; the time filter keeps its selection.
+Right-click Downloads, Images or Videos to open its configured source folder.
+Right-click All gives a tiny nudge because it has no single folder.
 
-The compact rows keep the original panel width and row height. Images have
-small previews; videos have a still frame and duration. Hovering an image row shows a larger preview beside the panel, preserving aspect ratio. Its width
-is the panel width minus 24 themed pixels, with a 12px gap; on narrow screens
-it fits the available side space. A stable 4:3 canvas fits every image without
-resizing between portrait and landscape files. The canvas background uses a
-local average of the image colour, darkened by 30%, and crossfades with it.
-Colour decoding runs separately, never delaying the image; results are cached
-under `~/.cache/omarchy-downloads/colors` (up to 256 entries). Unsupported
-formats or a missing ffmpeg keep the theme background. The list stays fully visible
-and reachable while moving between rows. New previews start loading immediately
-and crossfade over 90ms once ready. A newer hover interrupts the previous
-transition; outdated loads never become visible. The previous image remains
-while loading, and a 70ms exit grace bridges the small gaps between rows. The preview dismisses on pointer exit, scrolling or
-pressing to drag, and never moves rows or intercepts input. Video thumbnails
-retain the subtle 22% hover enlargement. GIF previews remain still. Video
-previews need `ffmpeg` and `ffprobe`; without them, the normal file icon remains.
-Hovering a video row plays it silently on a loop in the same side canvas.
-The cached thumbnail appears while the first frame loads. Moving to another
-file replaces the active player source immediately; leaving pauses playback,
-and closing the panel or starting a drag releases the player. This needs the
-Qt 6 Multimedia QML module (`qt6-multimedia` on Arch).
-Python 3 is required for folder scanning.
+The panel keeps its compact width and row height. Hover an image or video row
+to preview it beside the list, on whichever side has more room. Every row stays
+visible and reachable. Images fit a stable 4:3 canvas with a background sampled
+from the image, and fade between files without an initial hover delay. Moving
+quickly to another row replaces the pending preview with the latest selection.
+GIF previews remain still.
+
+Videos show a thumbnail and duration in the list, and play silently on a loop
+when hovered. Leaving the row pauses playback; closing the panel or dragging
+releases the player. Previews dismiss on pointer exit, scrolling or pressing
+to drag, and never intercept input.
+
+## Dependencies
+
+- **Python 3** for folder scanning and media helpers.
+- **Qt 6 Multimedia QML module** (`qt6-multimedia` on Arch) for video playback.
+- **ffmpeg and ffprobe** (`ffmpeg` on Arch) for video thumbnails, durations and
+  image-derived background colours. Without them, thumbnails use file icons
+  and preview backgrounds use the theme colour. Video playback uses Qt Multimedia.
 
 ## A panel you can drag out of
 
@@ -113,19 +108,27 @@ Set these on the plugin's entry in `~/.config/omarchy/shell.json`:
 - Each source scans at most 5000 entries and retains at most 200 per media
   category. The displayed filter caps at 200 rows. If a scan reaches the
   ceiling, the panel explicitly says it is partial; it cannot promise that
-  the newest files outside that scan were seen.
+  the newest files outside that scan were seen. The hidden-file count applies
+  to the selected source/type and time filters; older files do not inflate the
+  count in the recent view.
 - Duplicate paths appear once. Dragging freezes list replacement until the
   gesture ends, so background updates cannot destroy a row mid-drag.
 - Video thumbnails are generated sequentially, only when rows are created in
   the open panel. Versioned thumbnails live in
   `$XDG_CACHE_HOME/omarchy-downloads/thumbnails` (normally `~/.cache/...`), with
   a limit of 256 thumbnails. Failed/unsupported media keep a file icon.
+- Image background colours are decoded separately and cached in the sibling
+  `colors` directory (up to 256 entries). The sampled colour is darkened by 30%.
 
 ## Verification
 
 ```sh
 python3 -m unittest discover -s tests -v
+node tests/test_filters.js
+qmllint -I /usr/share/omarchy/shell *.qml
 ```
+
+Node.js is needed only for the filter regression tests.
 
 For UI verification, open each filter, hover first and last visible rows,
 scroll through videos, drag into another app, and check double-click and Esc.
@@ -137,7 +140,7 @@ The panel should retain the previous compact width and row height.
 omarchy plugin remove jankeesvw.downloads
 ```
 
-The plugin keeps its list state in memory. Its private video-thumbnail cache
+The plugin keeps its list state in memory. Its private thumbnail and colour caches
 can be removed separately from `~/.cache/omarchy-downloads` (or the matching
 location under your custom `XDG_CACHE_HOME`). Original files are never changed.
 

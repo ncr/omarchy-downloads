@@ -4,7 +4,7 @@
   "name": "Downloads",
   "version": "1.1.0",
   "author": "Jankees",
-  "description": "Recent downloads in the bar, in a panel you can drag files out of",
+  "description": "Recent downloads, pictures and videos with previews and drag-and-drop",
   "homepage": "https://github.com/jankeesvw/omarchy-downloads",
   "license": "MIT",
   "kinds": [
@@ -15,7 +15,7 @@
   },
   "barWidget": {
     "displayName": "Downloads",
-    "description": "Recent downloads in the bar, in a panel you can drag files out of",
+    "description": "Recent downloads, pictures and videos with previews and drag-and-drop",
     "category": "Apps",
     "allowMultiple": false,
     "defaultSection": "right"

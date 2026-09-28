@@ -417,6 +417,7 @@ Singleton {
           Layout.fillWidth: true
           visible: root.hiddenCount > 0 || root.scanTruncated || root.scanError !== ""
           wrapMode: Text.WordWrap
+          textFormat: Text.PlainText
           text: root.scanError || (root.scanTruncated
             ? "Large folder: showing a limited scan. Open the folder for all files."
             : "+ " + root.hiddenCount + " more files not shown")
