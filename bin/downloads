@@ -61,12 +61,18 @@ def listing(directory, kind="downloads"):
     # must not disappear from their filter behind 200 newer archives.
     counts = {}
     kept = []
+    omitted = []
     for row in rows:
         category = row["category"]
         counts[category] = counts.get(category, 0) + 1
         if counts[category] <= ROW_CAP:
             kept.append(row)
-    return {"ok": True, "files": kept, "hidden": len(rows) - len(kept),
+        else:
+            # Retain only the fields needed to filter and deduplicate the
+            # overflow count, including when files age out between scans.
+            omitted.append({key: row[key] for key in ("path", "modified", "category", "source")}
+                           | {"omitted": True})
+    return {"ok": True, "files": kept, "omitted": omitted,
             "scanned": scanned, "truncated": truncated}
 
 

@@ -56,7 +56,12 @@ class ListingTests(unittest.TestCase):
             self.make(f"file-{index}.zip")
         result = module.listing(str(self.root))
         self.assertIn("image.png", [x["name"] for x in result["files"]])
-        self.assertEqual(result["hidden"], 5)
+        self.assertEqual(len(result["omitted"]), 5)
+        for row in result["omitted"]:
+            self.assertEqual(row["category"], "other")
+            self.assertEqual(row["source"], "downloads")
+            self.assertTrue(row["omitted"])
+            self.assertEqual(row["modified"], int(Path(row["path"]).stat().st_mtime * 1000))
 
     def test_large_scan_is_disclosed_and_bounded(self):
         for index in range(5):

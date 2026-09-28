@@ -10,7 +10,7 @@ Item {
   property string kind: "downloads"
   property bool panelOpen: false
   property var files: []
-  property int hidden: 0
+  property var omitted: []
   property bool truncated: false
   property string error: ""
   property url watchedFolder: ""
@@ -49,7 +49,8 @@ Item {
           var next = data.files || []
           // Avoid rebuilding delegates (and interrupting hover/drag) on ticks.
           if (JSON.stringify(next) !== JSON.stringify(source.files)) source.files = next
-          source.hidden = data.hidden || 0
+          var omitted = data.omitted || []
+          if (JSON.stringify(omitted) !== JSON.stringify(source.omitted)) source.omitted = omitted
           source.truncated = data.truncated === true
           source.watchedFolder = data.ok && data.scanned < 2000
             ? "file://" + source.path.split("/").map(encodeURIComponent).join("/") : ""

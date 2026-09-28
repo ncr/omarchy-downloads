@@ -79,23 +79,29 @@ Singleton {
     if (draggingUrl !== "") { pendingRebuild = true; return }
     pendingRebuild = false
     var seen = {}
+    var freshSeen = {}
     var merged = []
     var fresh = 0
+    var hidden = 0
     var cutoff = now - freshMinutes * 60000
-    var input = downloads.files.concat(pictures.files, videos.files)
+    // Full rows precede overflow metadata so overlapping folders keep their
+    // displayable row. Overflow uses the same filters and deduplication.
+    var input = downloads.files.concat(pictures.files, videos.files,
+      downloads.omitted, pictures.omitted, videos.omitted)
     for (var i = 0; i < input.length; i++) {
       var f = input[i]
-      if (seen[f.path]) continue
-      seen[f.path] = true
       var isFresh = f.modified >= cutoff
-      if (isFresh) fresh++
+      if (isFresh && !freshSeen[f.path]) { fresh++; freshSeen[f.path] = true }
       if (!showAll && !isFresh) continue
       if (filter === "downloads" && f.source !== "downloads") continue
       if ((filter === "images" || filter === "videos") && f.category !== filter) continue
+      if (seen[f.path]) continue
+      seen[f.path] = true
+      if (f.omitted) { hidden++; continue }
       merged.push(Object.assign({}, f, {url: fileUrl(f.path), fresh: isFresh}))
     }
     merged.sort(function(a, b) { return b.modified - a.modified || a.path.localeCompare(b.path) })
-    hiddenCount = Math.max(0, merged.length - maxRows) + downloads.hidden + pictures.hidden + videos.hidden
+    hiddenCount = Math.max(0, merged.length - maxRows) + hidden
     scanTruncated = downloads.truncated || pictures.truncated || videos.truncated
     scanError = [downloads.error ? "Downloads: " + downloads.error : "", pictures.error ? "Pictures: " + pictures.error : "", videos.error ? "Videos: " + videos.error : ""].filter(function(s) { return s !== "" }).join(" · ")
     freshCount = fresh
@@ -113,21 +119,21 @@ Singleton {
   FolderSource {
     id: downloads; path: root.folderPath; kind: "downloads"; panelOpen: root.open
     onFilesChanged: root.rebuild()
-    onHiddenChanged: root.rebuild()
+    onOmittedChanged: root.rebuild()
     onTruncatedChanged: root.rebuild()
     onErrorChanged: root.rebuild()
   }
   FolderSource {
     id: pictures; path: root.picturesPath; kind: "images"; panelOpen: root.open
     onFilesChanged: root.rebuild()
-    onHiddenChanged: root.rebuild()
+    onOmittedChanged: root.rebuild()
     onTruncatedChanged: root.rebuild()
     onErrorChanged: root.rebuild()
   }
   FolderSource {
     id: videos; path: root.videosPath; kind: "videos"; panelOpen: root.open
     onFilesChanged: root.rebuild()
-    onHiddenChanged: root.rebuild()
+    onOmittedChanged: root.rebuild()
     onTruncatedChanged: root.rebuild()
     onErrorChanged: root.rebuild()
   }
