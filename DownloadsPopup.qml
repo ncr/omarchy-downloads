@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui
 
 // A layer-shell card with outside-click dismissal. During a native drag,
@@ -56,22 +57,24 @@ PanelWindow {
   readonly property var anchorWindow: anchorItem ? anchorItem.QsWindow.window : null
   readonly property string barPosition: bar ? bar.position : "top"
   readonly property real gap: Style.gapsOut
+  // The bar window spans its whole screen, so its size says nothing about the
+  // strip the bar paints; the strip's thickness is what the bar publishes.
+  readonly property real barThickness: !bar ? 0
+    : (typeof bar.barSizeFor === "function" && screen ? bar.barSizeFor(screen.name) : bar.barSize)
   readonly property real cardWidth: Math.min(contentWidth, Math.max(1, width - gap * 2
-    - (barPosition === "left" || barPosition === "right" ? (anchorWindow ? anchorWindow.width : 0) : 0)))
+    - (barPosition === "left" || barPosition === "right" ? barThickness : 0)))
   readonly property real cardHeight: Math.min(contentHeight, Math.max(1, height - gap * 2
-    - (barPosition === "top" || barPosition === "bottom" ? (anchorWindow ? anchorWindow.height : 0) : 0)))
+    - (barPosition === "top" || barPosition === "bottom" ? barThickness : 0)))
   readonly property point cardPosition: {
     anchorTracker.transform
     var p = anchorItem && anchorWindow ? anchorItem.mapToItem(anchorWindow.contentItem, 0, 0) : Qt.point(width - cardWidth, 0)
     var aw = anchorItem ? anchorItem.width : 0
     var ah = anchorItem ? anchorItem.height : 0
-    var bw = anchorWindow ? anchorWindow.width : 0
-    var bh = anchorWindow ? anchorWindow.height : 0
     var x = p.x + aw / 2 - cardWidth / 2
-    var y = bh + gap
-    if (barPosition === "bottom") y = height - bh - cardHeight - gap
-    else if (barPosition === "left") { x = bw + gap; y = p.y + ah / 2 - cardHeight / 2 }
-    else if (barPosition === "right") { x = width - bw - cardWidth - gap; y = p.y + ah / 2 - cardHeight / 2 }
+    var y = barThickness + gap
+    if (barPosition === "bottom") y = height - barThickness - cardHeight - gap
+    else if (barPosition === "left") { x = barThickness + gap; y = p.y + ah / 2 - cardHeight / 2 }
+    else if (barPosition === "right") { x = width - barThickness - cardWidth - gap; y = p.y + ah / 2 - cardHeight / 2 }
     return Qt.point(Math.round(Math.max(gap, Math.min(x, width - cardWidth - gap))),
                     Math.round(Math.max(gap, Math.min(y, height - cardHeight - gap))))
   }
@@ -159,8 +162,8 @@ PanelWindow {
     x: onRight ? card.x + card.width + previewGap : card.x - previewGap - width
     y: Math.max(popup.gap, Math.min(card.y, popup.height - height - popup.gap))
     visible: popup.open && !popup.dragging && (hasImage || String(popup.heldVideoSource) !== "") && width >= Style.space(80)
-    color: Color.popups.background
-    border.color: Color.popups.border
+    color: Commons.Color.popups.background
+    border.color: Commons.Color.popups.border
     border.width: Math.max(1, Style.spacing.hairline)
     radius: Style.cornerRadius
     Loader {
@@ -241,7 +244,7 @@ PanelWindow {
     Rectangle {
       anchors.fill: parent
       anchors.margins: Style.space(4)
-      color: Color.popups.background
+      color: Commons.Color.popups.background
       z: imagePreview.front === 0 ? 1 : 0
       opacity: imagePreview.front === 0 ? imagePreview.blend : 1
       visible: imagePreview.front === 0 || imagePreview.blend < 1
@@ -262,7 +265,7 @@ PanelWindow {
     Rectangle {
       anchors.fill: parent
       anchors.margins: Style.space(4)
-      color: Color.popups.background
+      color: Commons.Color.popups.background
       z: imagePreview.front === 1 ? 1 : 0
       opacity: imagePreview.front === 1 ? imagePreview.blend : 1
       visible: imagePreview.front === 1 || imagePreview.blend < 1
@@ -286,8 +289,8 @@ PanelWindow {
     id: card
     x: popup.cardPosition.x; y: popup.cardPosition.y
     width: popup.cardWidth; height: popup.cardHeight
-    color: Color.popups.background
-    borderSpec: Border.surfaceSpec("popups", "border", Color.popups.border, Math.max(1, Style.space(2)))
+    color: Commons.Color.popups.background
+    borderSpec: Border.surfaceSpec("popups", "border", Commons.Color.popups.border, Math.max(1, Style.space(2)))
     padding: 0
     radius: Style.cornerRadius
     MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }

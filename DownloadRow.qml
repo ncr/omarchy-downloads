@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 
 // One file in the download list, and the thing you actually drag.
 //
@@ -80,10 +81,10 @@ Item {
     anchors.fill: parent
     radius: Style.space(4)
     color: row.dragging
-      ? Util.alpha(Color.accent, 0.22)
-      : (mouse.containsMouse ? Util.alpha(Color.foreground, 0.10) : "transparent")
+      ? Util.alpha(Commons.Color.accent, 0.22)
+      : (mouse.containsMouse ? Util.alpha(Commons.Color.foreground, 0.10) : "transparent")
     border.width: row.dragging ? Style.spacing.hairline : 0
-    border.color: Color.accent
+    border.color: Commons.Color.accent
   }
 
   // Freshness is a small edge marker, without a separate column of padding.
@@ -94,7 +95,7 @@ Item {
     height: Style.space(8)
     radius: width / 2
     visible: row.fresh
-    color: Color.accent
+    color: Commons.Color.accent
   }
 
   // A RowLayout rather than a Row: the name has to take whatever is left
@@ -120,9 +121,9 @@ Item {
         scale: mouse.containsMouse && row.isVideo && !row.dragging ? 1.22 : 1
         Behavior on scale { NumberAnimation { duration: 130; easing.type: Easing.OutCubic } }
         radius: Style.space(4)
-        color: row.isImage || row.isVideo ? Util.alpha(Color.foreground, 0.06) : "transparent"
+        color: row.isImage || row.isVideo ? Util.alpha(Commons.Color.foreground, 0.06) : "transparent"
         border.width: row.isImage || row.isVideo ? 1 : 0
-        border.color: mouse.containsMouse ? Color.accent : Util.alpha(Color.muted, 0.25)
+        border.color: mouse.containsMouse ? Commons.Color.accent : Util.alpha(Commons.Color.muted, 0.25)
 
         Text {
           anchors.centerIn: parent
@@ -131,7 +132,7 @@ Item {
           textFormat: Text.PlainText
           font.family: row.store ? row.store.fontFamily : Style.font.family
           font.pixelSize: Style.font.icon
-          color: Color.muted
+          color: Commons.Color.muted
         }
         Image {
           id: thumbnail
@@ -163,7 +164,7 @@ Item {
       font.family: row.rowFont
       font.pixelSize: Style.font.body
       renderType: Text.NativeRendering
-      color: Color.foreground
+      color: Commons.Color.foreground
     }
 
     Text {
@@ -175,7 +176,7 @@ Item {
       font.family: row.rowFont
       font.pixelSize: Style.font.caption
       renderType: Text.NativeRendering
-      color: Color.muted
+      color: Commons.Color.muted
     }
 
     // Fixed, font-measured columns keep dates and sizes aligned across rows.
@@ -191,7 +192,7 @@ Item {
       font.family: row.rowFont
       font.pixelSize: Style.font.caption
       renderType: Text.NativeRendering
-      color: Color.muted
+      color: Commons.Color.muted
     }
     Text {
       Layout.alignment: Qt.AlignVCenter
@@ -207,7 +208,7 @@ Item {
       font.family: row.rowFont
       font.pixelSize: Style.font.caption
       renderType: Text.NativeRendering
-      color: Color.muted
+      color: Commons.Color.muted
     }
   }
 

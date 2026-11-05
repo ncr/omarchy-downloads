@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui
 
 Singleton {
@@ -277,7 +278,7 @@ Singleton {
             font.family: root.fontFamily
             font.pixelSize: Style.font.icon
             renderType: Text.NativeRendering
-            color: root.freshCount > 0 ? Color.accent : Color.foreground
+            color: root.freshCount > 0 ? Commons.Color.accent : Commons.Color.foreground
           }
 
           Text {
@@ -289,15 +290,15 @@ Singleton {
             font.family: root.fontFamily
             font.pixelSize: Style.font.subtitle
             renderType: Text.NativeRendering
-            color: Color.foreground
+            color: Commons.Color.foreground
           }
 
           Button {
             Layout.alignment: Qt.AlignVCenter
             iconText: root.iconFolder
             tooltipText: root.plain("Open " + root.displayPath)
-            foreground: Color.muted
-            accent: Color.accent
+            foreground: Commons.Color.muted
+            accent: Commons.Color.accent
             fontFamily: root.fontFamily
             iconSize: Style.font.iconSmall
             onClicked: root.openFolder()
@@ -321,9 +322,9 @@ Singleton {
                 text: modelData.label
                 selected: root.filter === modelData.value
                 bordered: true
-                foreground: Color.foreground
-                background: Color.background
-                accent: Color.accent
+                foreground: Commons.Color.foreground
+                background: Commons.Color.background
+                accent: Commons.Color.accent
                 fontFamily: root.fontFamily
                 fontSize: Style.font.caption
                 focusable: false
@@ -352,8 +353,8 @@ Singleton {
               { value: "all", label: "All time" }
             ]
             value: root.showAll ? "all" : "fresh"
-            foreground: Color.foreground
-            accent: Color.accent
+            foreground: Commons.Color.foreground
+            accent: Commons.Color.accent
             fontFamily: root.fontFamily
             fontSize: Style.font.caption
             // The window has no panel cursor to hand around, so the group is
@@ -367,7 +368,7 @@ Singleton {
         Rectangle {
           Layout.fillWidth: true
           height: Style.spacing.hairline
-          color: Color.popups.border
+          color: Commons.Color.popups.border
         }
 
         // The list. Each row is a drag handle; see DownloadRow.qml.
@@ -410,7 +411,7 @@ Singleton {
           font.family: root.fontFamily
           font.pixelSize: Style.font.bodySmall
           renderType: Text.NativeRendering
-          color: Color.muted
+          color: Commons.Color.muted
         }
 
         Text {
@@ -424,7 +425,7 @@ Singleton {
           font.family: root.fontFamily
           font.pixelSize: Style.font.caption
           renderType: Text.NativeRendering
-          color: Color.muted
+          color: Commons.Color.muted
         }
 
         Text {
@@ -435,7 +436,7 @@ Singleton {
           font.family: root.fontFamily
           font.pixelSize: Style.font.caption
           renderType: Text.NativeRendering
-          color: Color.muted
+          color: Commons.Color.muted
         }
       }
     }

@@ -1,6 +1,7 @@
 import QtQuick
 import QtMultimedia
 import qs.Commons
+import qs.Commons as Commons
 
 // One player for the hovered file. Changing source stops the previous decoder;
 // leaving/closing the panel pauses or destroys it, and audio stays muted.
@@ -76,8 +77,8 @@ Item {
     textFormat: Text.PlainText
     font.family: Style.font.family
     font.pixelSize: Style.font.caption
-    color: Color.foreground
+    color: Commons.Color.foreground
     style: Text.Outline
-    styleColor: Color.background
+    styleColor: Commons.Color.background
   }
 }
