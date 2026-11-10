@@ -13,7 +13,7 @@ function store() {
   const state = {
     now, freshMinutes: 5, maxRows: 200, showAll: false, filter: 'all',
     draggingUrl: '', pendingRebuild: false, files: [],
-    downloads: source(), pictures: source(), videos: source(),
+    downloads: source(), pictures: source(), videos: source(), screenshots: source(),
     fileUrl: path => 'file://' + path,
   };
   state.root = state;
@@ -75,4 +75,20 @@ v.filter = 'downloads';
 v.rebuild();
 assert.equal(v.hiddenCount, 1);
 assert.equal(v.freshCount, 1);
+// Screenshots are their own source, and still images.
+const w = store();
+w.showAll = true;
+w.pictures.files = [row('/pictures/photo', 'images', 'images')];
+w.screenshots.files = [row('/pictures/Screenshots/shot', 'images', 'screenshots')];
+w.downloads.files = [row('/downloads/file', 'other', 'downloads')];
+for (const [filter, expected] of [['all', 3], ['images', 2], ['screenshots', 1], ['downloads', 1]]) {
+  w.filter = filter;
+  w.rebuild();
+  assert.equal(w.files.length, expected, filter);
+}
+assert.equal(w.files[0].path, '/downloads/file');
+w.filter = 'screenshots';
+w.rebuild();
+assert.equal(w.files[0].path, '/pictures/Screenshots/shot');
+
 console.log('Filter regressions passed: time, category, source, expiry, cap and deduplication.');

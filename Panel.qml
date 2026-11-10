@@ -59,7 +59,8 @@ Panel {
     var folder = String(root.setting("folder", ""))
     DownloadsStore.configure(root.setting("freshMinutes", 5),
                              folder, String(root.setting("picturesFolder", "")),
-                             String(root.setting("videosFolder", "")))
+                             String(root.setting("videosFolder", "")),
+                             String(root.setting("screenshotsFolder", "")))
     DownloadsStore.fontFamily = root.fontFamily
   }
 

@@ -33,6 +33,14 @@ class ListingTests(unittest.TestCase):
         self.assertEqual([x["name"] for x in module.listing(str(self.root), "images")["files"]], ["image.png"])
         self.assertEqual([x["name"] for x in module.listing(str(self.root), "videos")["files"]], ["movie.mp4"])
 
+    def test_screenshots_keep_only_images_tagged_with_their_source(self):
+        self.make("shot.png")
+        self.make("notes.txt")
+        (self.root / "dir").mkdir()
+        files = module.listing(str(self.root), "screenshots")["files"]
+        self.assertEqual([(x["name"], x["category"], x["source"]) for x in files],
+                         [("shot.png", "images", "screenshots")])
+
     def test_downloads_preserve_folders_and_unusual_names(self):
         name = 'a\n";$(touch NOT_EXECUTED).png'
         self.make(name)

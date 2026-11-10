@@ -27,6 +27,8 @@ def listing(directory, kind="downloads"):
     scanned = 0
     truncated = False
     recording = active_recording()
+    # Screenshots are a source of their own that keeps only images.
+    media = "images" if kind == "screenshots" else kind
     with os.scandir(directory) as entries:
         for entry in entries:
             if scanned >= SCAN_CAP:
@@ -41,7 +43,7 @@ def listing(directory, kind="downloads"):
                 if not is_dir and not entry.is_file(follow_symlinks=False):
                     continue
                 category = "images" if suffix in IMAGES else "videos" if suffix in VIDEOS else "other"
-                if kind != "downloads" and (is_dir or category != kind):
+                if kind != "downloads" and (is_dir or category != media):
                     continue
                 if not is_dir and (suffix in PARTIAL or entry.path == recording):
                     continue
@@ -86,7 +88,7 @@ def main():
                 count = sum(1 for _, _entry in zip(range(2001), entries))
             result = {"ok": True, "entries": min(count, 2000), "over": count > 2000}
         else:
-            raise ValueError("usage: downloads list|probe DIR [downloads|images|videos]")
+            raise ValueError("usage: downloads list|probe DIR [downloads|images|videos|screenshots]")
     except (OSError, ValueError) as exc:
         result = {"ok": False, "error": str(exc), "files": []}
     print(json.dumps(result, ensure_ascii=True))

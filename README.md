@@ -73,6 +73,7 @@ o.bind("SUPER + D", "Downloads", "omarchy-shell shell toggle jankeesvw.downloads
 | Right-click the bar button | open the folder in your file manager |
 | Drag a row | hand the file to whatever is under the cursor |
 | Double-click a row | open the file |
+| `Screenshots` tab | only images from Omarchy's screenshot folder; right-click opens the folder |
 | `N minutes` / `All time` | show only what just arrived, or the whole folder |
 | `Esc` or click outside | close |
 
@@ -91,6 +92,7 @@ Set these on the plugin's entry in `~/.config/omarchy/shell.json`:
 | `folder` | XDG download dir | Download source, as an absolute path |
 | `picturesFolder` | XDG pictures dir | Image source, as an absolute path |
 | `videosFolder` | XDG videos dir | Video source, as an absolute path |
+| `screenshotsFolder` | `$OMASNAP_SCREENSHOT_DIR`, else `$OMARCHY_SCREENSHOT_DIR`, else `<pictures>/Screenshots` | Screenshot source behind the Screenshots tab, as an absolute path |
 
 ```json
 { "id": "jankeesvw.downloads", "freshMinutes": 10 }

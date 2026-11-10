@@ -15,6 +15,7 @@ Singleton {
   property string folderPath: StandardPaths.writableLocation(StandardPaths.DownloadLocation).toString().replace(/^file:\/\//, "")
   property string picturesPath: StandardPaths.writableLocation(StandardPaths.PicturesLocation).toString().replace(/^file:\/\//, "")
   property string videosPath: StandardPaths.writableLocation(StandardPaths.MoviesLocation).toString().replace(/^file:\/\//, "")
+  property string screenshotsPath: defaultScreenshots()
   property string fontFamily: Style.font.family
   property var files: []
   property int freshCount: 0
@@ -36,15 +37,25 @@ Singleton {
   }
   property bool pendingRebuild: false
   readonly property int maxRows: 200
-  readonly property string displayPath: filter === "images" ? picturesPath : filter === "videos" ? videosPath : folderPath
+  readonly property string displayPath: filter === "images" ? picturesPath : filter === "videos" ? videosPath
+    : filter === "screenshots" ? screenshotsPath : folderPath
   function plain(s) { return String(s || "").replace(/[<>]/g, "") }
 
-  function configure(minutes, folder, pictures, videos) {
+  // Where Omarchy saves screenshots: Omasnap's variable, then the legacy
+  // Omarchy one, then Pictures/Screenshots.
+  function defaultScreenshots() {
+    var env = String(Quickshell.env("OMASNAP_SCREENSHOT_DIR") || Quickshell.env("OMARCHY_SCREENSHOT_DIR") || "")
+    if (env.startsWith("/")) return env.replace(/\/+$/, "")
+    var pics = decodeURIComponent(StandardPaths.writableLocation(StandardPaths.PicturesLocation).toString().replace(/^file:\/\//, ""))
+    return pics + "/Screenshots"
+  }
+  function configure(minutes, folder, pictures, videos, screenshots) {
     var n = Number(minutes)
     if (isFinite(n) && n >= 1 && n <= 1440) freshMinutes = Math.round(n)
     folderPath = folder || decodeURIComponent(StandardPaths.writableLocation(StandardPaths.DownloadLocation).toString().replace(/^file:\/\//, ""))
     picturesPath = pictures || decodeURIComponent(StandardPaths.writableLocation(StandardPaths.PicturesLocation).toString().replace(/^file:\/\//, ""))
     videosPath = videos || decodeURIComponent(StandardPaths.writableLocation(StandardPaths.MoviesLocation).toString().replace(/^file:\/\//, ""))
+    screenshotsPath = screenshots || defaultScreenshots()
   }
   function fileUrl(path) {
     return "file://" + String(path).split("/").map(encodeURIComponent).join("/")
@@ -63,6 +74,7 @@ Singleton {
     if (source === "downloads") return folderPath
     if (source === "images") return picturesPath
     if (source === "videos") return videosPath
+    if (source === "screenshots") return screenshotsPath
     return ""
   }
   function openSourceFolder(source) {
@@ -87,14 +99,14 @@ Singleton {
     var cutoff = now - freshMinutes * 60000
     // Full rows precede overflow metadata so overlapping folders keep their
     // displayable row. Overflow uses the same filters and deduplication.
-    var input = downloads.files.concat(pictures.files, videos.files,
-      downloads.omitted, pictures.omitted, videos.omitted)
+    var input = downloads.files.concat(pictures.files, videos.files, screenshots.files,
+      downloads.omitted, pictures.omitted, videos.omitted, screenshots.omitted)
     for (var i = 0; i < input.length; i++) {
       var f = input[i]
       var isFresh = f.modified >= cutoff
       if (isFresh && !freshSeen[f.path]) { fresh++; freshSeen[f.path] = true }
       if (!showAll && !isFresh) continue
-      if (filter === "downloads" && f.source !== "downloads") continue
+      if ((filter === "downloads" || filter === "screenshots") && f.source !== filter) continue
       if ((filter === "images" || filter === "videos") && f.category !== filter) continue
       if (seen[f.path]) continue
       seen[f.path] = true
@@ -103,8 +115,10 @@ Singleton {
     }
     merged.sort(function(a, b) { return b.modified - a.modified || a.path.localeCompare(b.path) })
     hiddenCount = Math.max(0, merged.length - maxRows) + hidden
-    scanTruncated = downloads.truncated || pictures.truncated || videos.truncated
-    scanError = [downloads.error ? "Downloads: " + downloads.error : "", pictures.error ? "Pictures: " + pictures.error : "", videos.error ? "Videos: " + videos.error : ""].filter(function(s) { return s !== "" }).join(" · ")
+    scanTruncated = downloads.truncated || pictures.truncated || videos.truncated || screenshots.truncated
+    // A missing screenshots folder only means no screenshot was taken yet.
+    scanError = [downloads.error ? "Downloads: " + downloads.error : "", pictures.error ? "Pictures: " + pictures.error : "", videos.error ? "Videos: " + videos.error : "",
+      screenshots.error && filter === "screenshots" ? "Screenshots: " + screenshots.error : ""].filter(function(s) { return s !== "" }).join(" · ")
     freshCount = fresh
     var next = merged.slice(0, maxRows)
     if (JSON.stringify(next) !== JSON.stringify(files)) files = next
@@ -126,6 +140,13 @@ Singleton {
   }
   FolderSource {
     id: pictures; path: root.picturesPath; kind: "images"; panelOpen: root.open
+    onFilesChanged: root.rebuild()
+    onOmittedChanged: root.rebuild()
+    onTruncatedChanged: root.rebuild()
+    onErrorChanged: root.rebuild()
+  }
+  FolderSource {
+    id: screenshots; path: root.screenshotsPath; kind: "screenshots"; panelOpen: root.open
     onFilesChanged: root.rebuild()
     onOmittedChanged: root.rebuild()
     onTruncatedChanged: root.rebuild()
@@ -241,7 +262,7 @@ Singleton {
     imagePreviewSource: root.hoverImageUrl
     videoPreviewSource: root.hoverVideoUrl
     videoPreviewPoster: root.hoverVideoPoster
-    contentWidth: Style.space(520)
+    contentWidth: Style.space(590)
 
     // The height follows the list instead of being a fixed box: with two
     // downloads in it, a 560px window is mostly empty, which reads as a
@@ -315,7 +336,8 @@ Singleton {
                 { value: "all", label: "All" },
                 { value: "downloads", label: "Downloads" },
                 { value: "images", label: "Images" },
-                { value: "videos", label: "Videos" }
+                { value: "videos", label: "Videos" },
+                { value: "screenshots", label: "Screenshots" }
               ]
               delegate: Button {
                 required property var modelData
